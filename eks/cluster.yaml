@@ -1,0 +1,43 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: mikhail-dremio-2
+  region: us-west-2
+
+vpc:
+  id: "vpc-72cc4c0a"
+  subnets:
+    public:
+      us-west-2c:
+        id: "subnet-3fa74b62"
+      us-west-2d:
+        id: "subnet-a05c388b"
+
+nodeGroups:
+  - name: workers
+    instanceType: c5d.4xlarge
+    desiredCapacity: 1
+    minSize: 1
+    maxSize: 2
+    ami: auto
+    ssh:
+      allow: true
+      publicKeyName: 'mikhails_fe'
+    tags:
+      'owner': 'mikhail'
+    preBootstrapCommands:
+      - "mkdir -p /mnt/ephemeral"
+      - "mkdir -p /mnt/ephemeral/disk1"
+      - "mkdir -p /mnt/ephemeral/disk2"
+      - "mkdir -p /mnt/ephemeral/disk3"
+      - "mkdir -p /mnt/ephemeral/disk4"
+      - "[[ -e /dev/nvme1n1 ]] && { mkfs -t ext4 /dev/nvme1n1; mount /dev/nvme1n1 /mnt/ephemeral/disk1;}"
+      - "[[ -e /dev/nvme2n1 ]] && { mkfs -t ext4 /dev/nvme2n1; mount /dev/nvme2n1 /mnt/ephemeral/disk2;}"
+      - "[[ -e /dev/nvme3n1 ]] && { mkfs -t ext4 /dev/nvme3n1; mount /dev/nvme3n1 /mnt/ephemeral/disk3;}"
+      - "[[ -e /dev/nvme4n1 ]] && { mkfs -t ext4 /dev/nvme4n1; mount /dev/nvme4n1 /mnt/ephemeral/disk4;}"
+      - "chown ec2-user:ec2-user /mnt/ephemeral"
+      - "chown ec2-user:ec2-user /mnt/ephemeral/disk1"
+      - "chown ec2-user:ec2-user /mnt/ephemeral/disk2"
+      - "chown ec2-user:ec2-user /mnt/ephemeral/disk3"
+      - "chown ec2-user:ec2-user /mnt/ephemeral/disk4"
