@@ -58,6 +58,10 @@ spec:
           value: "{{ template "HeapMemory" .Values.coordinator.memory }}"
         - name: DREMIO_MAX_DIRECT_MEMORY_SIZE_MB
           value: "{{ template "DirectMemory" .Values.coordinator.memory }}"
+        - name: DREMIO_LOG_TO_CONSOLE
+          value: "0"
+        - name: DREMIO_LOG_DIR
+          value: /var/log/dremio
         - name: DREMIO_JAVA_EXTRA_OPTS
           value: >-
             -Dzookeeper=zk-hs:2181

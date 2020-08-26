@@ -99,6 +99,10 @@
     <level value="${dremio.log.level:-info}"/>
   </logger>
 
+  <logger name="org.apache.arrow.gandiva">
+    <level value="${dremio.log.level:-debug}"/>
+  </logger>
+
   <logger name="query.logger">
     <level value="${dremio.log.level:-info}"/>
     <if condition='isDefined("dremio.log.path")'>

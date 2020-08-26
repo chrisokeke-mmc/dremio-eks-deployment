@@ -44,6 +44,10 @@ spec:
           value: "{{ template "HeapMemory" .Values.reflectionExecutor.memory }}"
         - name: DREMIO_MAX_DIRECT_MEMORY_SIZE_MB
           value: "{{ template "DirectMemory" .Values.reflectionExecutor.memory }}"
+        - name: DREMIO_LOG_TO_CONSOLE
+          value: "0"
+        - name: DREMIO_LOG_DIR
+          value: /var/log/dremio
         - name: DREMIO_JAVA_EXTRA_OPTS
           value: >-
             -Dzookeeper=zk-hs:2181
@@ -65,7 +69,8 @@ spec:
         volumeMounts:
         - name: dremio-ephemeral
           mountPath: /mnt/ephemeral
-        command: ["/bin/sh", "-c", "chown dremio:dremio /mnt/ephemeral/disk1; chown dremio:dremio /mnt/ephemeral/disk2; chown dremio:dremio /mnt/ephemeral/disk3; chown dremio:dremio /mnt/ephemeral/disk4; "]
+        command: ["/bin/sh", "-c", "chown dremio:dremio /mnt/ephemeral/disk1; chown dremio:dremio /mnt/ephemeral/disk2; chown dremio:dremio /mnt/ephemeral/disk3; chown dremio:dremio /mnt/ephemeral/disk4; rm -rf /mnt/ephemeral/disk1/*;  rm -rf /mnt/ephemeral/disk2/*;  rm -rf /mnt/ephemeral/disk3/*;  rm -rf /mnt/ephemeral/disk4/*; "]
+#        command: ["/bin/sh", "-c", "chown dremio:dremio /mnt/ephemeral/disk1; chown dremio:dremio /mnt/ephemeral/disk2; chown dremio:dremio /mnt/ephemeral/disk3; chown dremio:dremio /mnt/ephemeral/disk4; "]
       - name: wait-for-zk
         image: busybox
         command:  ["sh", "-c", "until ping -c 1 -W 1 zk-hs > /dev/null; do echo waiting for zookeeper host; sleep 2; done;"]
