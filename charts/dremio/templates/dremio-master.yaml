@@ -27,7 +27,7 @@ spec:
                     values:
                     - dremio-master
               topologyKey: "kubernetes.io/hostname"
-      terminationGracePeriodSeconds: 300
+      terminationGracePeriodSeconds: 120
       {{- if .Values.nodeSelector }}
       nodeSelector:
         {{- range $key, $value := .Values.nodeSelector }}
@@ -92,6 +92,10 @@ spec:
       - name: sync-query-files
         image: amazon/aws-cli:latest
         imagePullPolicy: IfNotPresent
+        lifecycle:
+          preStop:
+            exec:
+              command: ['sh', '-c', 'sh /home/user/sync-queries-json.sh s3://mikhail-dumpster/queries/$HOSTNAME once']
         resources:
           requests:
             memory: 500M
@@ -101,7 +105,7 @@ spec:
             mountPath: /mnt/ephemeral
           - name: aws-scripts
             mountPath: /home/user
-        command: ['sh', '-c', 'sh /home/user/aws-s3-sync.sh "/mnt/ephemeral/log/dremio-*/" "s3://mikhail-dumpster/queries" "queries*" 60']
+        command: ['sh', '-c', 'sh /home/user/sync-queries-json.sh s3://mikhail-dumpster/queries/$HOSTNAME 60']
       initContainers:
       - name: start-only-one-master
         image: busybox

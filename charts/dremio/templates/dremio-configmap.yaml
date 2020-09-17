@@ -10,11 +10,16 @@ kind: ConfigMap
 metadata:
   name: aws-scripts
 data:
-  aws-s3-sync.sh: |-
+  sync-queries-json.sh: |-
     #!/bin/sh
-    # Usage: sh aws-s3-sync.sh source destination include_pattern run_every_x_seconds
+    # Usage: sh aws-s3-sync.sh source destination include_pattern [run_every_x_seconds | 'once']
+    trap "exit" SIGTERM
     while true; do
-      aws s3 sync --exclude "*" --include $3 $1 $2
-      sleep $4
+      aws s3 sync --exclude "*" --include "queries*json" /mnt/ephemeral/log/dremio-*/ $1
+      aws s3 sync --exclude "*" --include "queries*json.gz" /mnt/ephemeral/log/dremio-*/archive/ $1
+      if test $2 = 'once'; then
+        break
+      fi
+      sleep $2
     done
 
