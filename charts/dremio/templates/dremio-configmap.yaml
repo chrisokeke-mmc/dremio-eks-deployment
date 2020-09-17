@@ -4,3 +4,17 @@ metadata:
   name: dremio-config
 data:
   {{- tpl (.Files.Glob "config/*").AsConfig . | nindent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-scripts
+data:
+  aws-s3-sync.sh: |-
+    #!/bin/sh
+    # Usage: sh aws-s3-sync.sh source destination include_pattern run_every_x_seconds
+    while true; do
+      aws s3 sync --exclude "*" --include $3 $1 $2
+      sleep $4
+    done
+

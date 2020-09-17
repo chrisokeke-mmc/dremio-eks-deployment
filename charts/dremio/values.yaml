@@ -2,13 +2,13 @@
 # version tag to the version that you are using. This will ensure that all
 # the pods are using the same version of the software.
 image: dremio/dremio-ee
-imageTag: 4.7.1
+imageTag: 4.7.3
 
 # Check out Dremio documentation for memory and cpu requirements for
 # the coordinators and the executors.
 # The value of memory should be in MB. CPU is in no of cores.
 coordinator:
-  memory: 1000
+  memory: 20000
   cpu: 1
   # This count is for slave coordinators only.
   # The chart will always create one master coordinator - you are
@@ -20,9 +20,9 @@ coordinator:
     port: 31010
   volumeSize: 100Gi
 executor:
-  memory: 1000
+  memory: 20000
   cpu: 1
-  count: 2
+  count: 1
   dremioEngine: query-engine
   cloudCache:
     # Requires Dremio version 4.0.0 or later
@@ -92,7 +92,7 @@ serviceType: LoadBalancer
 # for the LoadBalancer's external IP.
 # The chart is setup for internal IP support for AKS, EKS, GKE.
 # For more information, see https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
-internalLoadBalancer: true
+internalLoadBalancer: false
 
 # To use custom storage class, uncomment and provide the value here.
 # Otherwise the default storage class configured for your K8S cluster is used.
@@ -116,10 +116,10 @@ imagePullSecrets: dremio-docker-secret
 distStorage:
   # Valid values are local, aws, azure or azureStorage. aws and azure
   # choice requires additional configuration data.
-  type: "aws"
+  type: "local"
   aws: # S3
-    bucketName: "mikhail-eks-1-dremio"
-    path: "/dremio_10/"
+    bucketName: "Your_AWS_bucket_name"
+    path: "/"
     accessKey: "Your_AWS_Access_Key"
     secret: "Your_AWS_Secret"
   azure: # ADLS gen1
@@ -141,7 +141,7 @@ ephemeralStorage:
   # When enabled, mountPaths have to be set from #1 to #4 sequentially. 
   # For example if the node has only 2 nvme mounts, set mountPath1 and mountPath2
   mountPath1: "/mnt/ephemeral/disk1"
-  mountPath2: "/mnt/ephemeral/disk2"
+  mountPath2: "None"
   mountPath3: "None"
   mountPath4: "None"
 

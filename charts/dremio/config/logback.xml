@@ -78,22 +78,23 @@
         </encoder>
       </appender>
 
-      <appender name="query" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${dremio.log.path}/queries.json</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-          <fileNamePattern>${dremio.log.path}/archive/queries.%d{yyyy-MM-dd}.%i.json.gz</fileNamePattern>
-          <maxHistory>30</maxHistory>
-          <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-            <maxFileSize>100MB</maxFileSize>
-          </timeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
-
-        <encoder>
-          <pattern>%msg%n</pattern>
-        </encoder>
-      </appender>
     </then>
   </if>
+
+  <appender name="query" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/mnt/ephemeral/log/${HOSTNAME}/queries.json</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>/mnt/ephemeral/log/${HOSTNAME}/archive/queries.%d{yyyy-MM-dd}.%i.json.gz</fileNamePattern>
+      <maxHistory>30</maxHistory>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <maxFileSize>100MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+  </appender>
+
 
   <logger name="com.dremio">
     <level value="${dremio.log.level:-info}"/>
@@ -105,11 +106,7 @@
 
   <logger name="query.logger">
     <level value="${dremio.log.level:-info}"/>
-    <if condition='isDefined("dremio.log.path")'>
-      <then>
-        <appender-ref ref="query"/>
-      </then>
-    </if>
+    <appender-ref ref="query"/>
   </logger>
 
   <logger name="com.dremio.exec.catalog.SourceMetadataManager" additivity="false">

@@ -40,14 +40,14 @@ spec:
         - name: dremio-ephemeral
           mountPath: /mnt/ephemeral
         env:
-        - name: DREMIO_MAX_HEAP_MEMORY_SIZE_MB
-          value: "{{ template "HeapMemory" .Values.executor.memory }}"
-        - name: DREMIO_MAX_DIRECT_MEMORY_SIZE_MB
-          value: "{{ template "DirectMemory" .Values.executor.memory }}"
         - name: DREMIO_LOG_TO_CONSOLE
           value: "0"
         - name: DREMIO_LOG_DIR
           value: /var/log/dremio
+        - name: DREMIO_MAX_HEAP_MEMORY_SIZE_MB
+          value: "{{ template "HeapMemory" .Values.executor.memory }}"
+        - name: DREMIO_MAX_DIRECT_MEMORY_SIZE_MB
+          value: "{{ template "DirectMemory" .Values.executor.memory }}"
         - name: DREMIO_JAVA_EXTRA_OPTS
           value: >-
             -Dzookeeper=zk-hs:2181
@@ -61,7 +61,7 @@ spec:
         - containerPort: 45678
           name: server
       initContainers:
-      - name: chown-ephemeral
+      - name: init-ephemeral
         image: {{.Values.image}}:{{.Values.imageTag}}
         imagePullPolicy: IfNotPresent
         securityContext:
@@ -69,16 +69,7 @@ spec:
         volumeMounts:
         - name: dremio-ephemeral
           mountPath: /mnt/ephemeral
-        command: ["/bin/sh", "-c", "chown dremio:dremio /mnt/ephemeral/disk1; chown dremio:dremio /mnt/ephemeral/disk2; chown dremio:dremio /mnt/ephemeral/disk3; chown dremio:dremio /mnt/ephemeral/disk4; rm -rf /mnt/ephemeral/disk1/*;  rm -rf /mnt/ephemeral/disk2/*;  rm -rf /mnt/ephemeral/disk3/*;  rm -rf /mnt/ephemeral/disk4/*; "]
-      - name: cp-jar
-        image: {{.Values.image}}:{{.Values.imageTag}}
-        imagePullPolicy: IfNotPresent
-        securityContext:
-          runAsUser: 0
-        volumeMounts:
-        - name: dremio-ephemeral
-          mountPath: /mnt/ephemeral
-        command: ["/bin/sh", "-c", "mkdir /mnt/ephemeral/disk1/gandiva_cache; rm -rf /mnt/ephemeral/disk1/gandiva_cache/*;  chown dremio:dremio /mnt/ephemeral/disk1/gandiva_cache; curl https://mikhail-dumpster.s3-us-west-2.amazonaws.com/public/gandiva_cache.tar.gz -o /mnt/ephemeral/disk1/gandiva_cache/gandiva_cache.tar.gz; tar -xzvf /mnt/ephemeral/disk1/gandiva_cache/gandiva_cache.tar.gz -C /mnt/ephemeral/disk1/gandiva_cache; rm /mnt/ephemeral/disk1/gandiva_cache/gandiva_cache.tar.gz; chown dremio:dremio /mnt/ephemeral/disk1/gandiva_cache/*; "]
+        command: ["/bin/sh", "-c", "mkdir -p /mnt/ephemeral/log; chown dremio:dremio /mnt/ephemeral/log; chown dremio:dremio /mnt/ephemeral/disk1; chown dremio:dremio /mnt/ephemeral/disk2; chown dremio:dremio /mnt/ephemeral/disk3; chown dremio:dremio /mnt/ephemeral/disk4;"]
       - name: wait-for-zk
         image: busybox
         command:  ["sh", "-c", "until ping -c 1 -W 1 zk-hs > /dev/null; do echo waiting for zookeeper host; sleep 2; done;"]
