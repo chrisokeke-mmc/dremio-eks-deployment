@@ -2,8 +2,8 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: mikhail-dremio-1
-  region: us-west-3
+  name: mikhail-dremio-2
+  region: us-west-2
 
 vpc:
   id: "vpc-72cc4c0a"
@@ -26,6 +26,7 @@ nodeGroups:
       publicKeyName: 'mikhails_fe'
     tags:
       'owner': 'mikhail'
+      'CostCenter': 'ps'
     preBootstrapCommands:
       - "mkdir -p /mnt/ephemeral"
       - "mkdir -p /mnt/ephemeral/disk1"
