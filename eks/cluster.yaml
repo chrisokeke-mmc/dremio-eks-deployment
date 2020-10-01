@@ -17,9 +17,9 @@ vpc:
 nodeGroups:
   - name: workers
     instanceType: c5d.xlarge
-    desiredCapacity: 5
+    desiredCapacity: 2
     minSize: 1
-    maxSize: 6
+    maxSize: 2
     ami: auto
     ssh:
       allow: true

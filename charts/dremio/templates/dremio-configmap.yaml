@@ -12,14 +12,51 @@ metadata:
 data:
   sync-queries-json.sh: |-
     #!/bin/sh
-    # Usage: sh aws-s3-sync.sh source destination include_pattern [run_every_x_seconds | 'once']
+    # Usage: sh aws-s3-sync.sh destination [run_every_x_seconds | 'once']
     trap "exit" SIGTERM
+    DIRNAME=`dirname "$0"`
+    echo $DIRNAME
     while true; do
-      aws s3 sync --exclude "*" --include "queries*json" /mnt/ephemeral/log/dremio-*/ $1
-      aws s3 sync --exclude "*" --include "queries*json.gz" /mnt/ephemeral/log/dremio-*/archive/ $1
+      # truncate strings over 32000 chars
+      python $DIRNAME/truncate_queries_json.py /mnt/ephemeral/log/dremio-*/queries*json w
+      python $DIRNAME/truncate_queries_json.py /mnt/ephemeral/log/dremio-*/archive/queries*json.gz
+      # Sync with aws cli
+      aws s3 sync --exclude "*" --include "truncated_queries*json.gz" /mnt/ephemeral/log/dremio-*/ $1
+      aws s3 sync --exclude "*" --include "truncated_queries*json.gz" /mnt/ephemeral/log/dremio-*/archive/ $1
       if test $2 = 'once'; then
         break
       fi
       sleep $2
     done
+  infinite-loop.sh: |-
+    #!/bin/sh
+    trap "exit" SIGTERM
+    while true; do
+      sleep 10000
+    done
+  truncate_queries_json.py: |-
+    import json
+    import os
+    import sys
+    import gzip
+    import glob
 
+    for infn in glob.iglob(sys.argv[1]):
+      outfn = os.path.dirname(infn) + '/truncated_' + os.path.basename(infn) + ('.gz' if infn[-3:] != '.gz' else '')
+      # do not re-process files if not requested
+      if (len(sys.argv) < 3 or sys.argv[2] != 'w') and os.path.isfile(outfn):
+        break
+      if infn[-3:] == '.gz':
+        inf = gzip.open(infn, "rt")
+      else:
+        inf = open(infn, "r")
+      outf = gzip.open(outfn, "wt")
+      data = [json.loads(line) for line in inf]
+      for line in data:
+        for item in line:
+          value = line[item]
+          if type(value) == str and len(value) > 32000:
+            line[item] = value[:3199]
+        outf.write(json.dumps(line) + '\n')
+      inf.close()
+      outf.close()
